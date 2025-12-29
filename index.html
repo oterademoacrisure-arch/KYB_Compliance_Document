@@ -71,7 +71,7 @@
         const files = document.getElementById('fileInput').files;
 
         // Validation Check
-        if (!company || !individual || !email || files.length === 0) {
+        if (!email || files.length === 0) {
             alert("Please fill in all mandatory fields and upload at least one document.");
             return;
         }
@@ -112,5 +112,6 @@
 </script>
 </body>
 </html>
+
 
 
