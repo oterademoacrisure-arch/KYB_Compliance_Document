@@ -6,7 +6,7 @@
     <title>ComplianceGate Demo</title>
     <style>
         :root { --primary: #004a99; --bg: #f3f4f6; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
         .card { background: white; width: 100%; max-width: 480px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
         .header { background: var(--primary); color: white; padding: 25px; text-align: center; }
         .content { padding: 25px; }
@@ -32,17 +32,14 @@
                 <label>Application Reference (ID)</label>
                 <input type="text" id="customerId" readonly>
             </div>
-
             <div class="input-group">
                 <label>Company Name</label>
                 <input type="text" id="companyName" readonly>
             </div>
-
             <div class="input-group">
                 <label>Email Address</label>
                 <input type="email" id="customerEmail" placeholder="Enter your email">
             </div>
-
             <label>Upload Documents</label>
             <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
                 <span style="font-size:30px;">📂</span><br>
@@ -50,7 +47,6 @@
                 <input type="file" id="fileInput" multiple style="display:none;">
             </div>
             <div id="fileList">No files selected.</div>
-
             <button type="button" id="submitBtn" onclick="processUpload()">Submit Updated Documents</button>
             <div id="status"></div>
         </form>
@@ -58,35 +54,27 @@
 </div>
 
 <script>
-    // 1. Read URL Parameters on Load
+    // 1. URL Parameter Parsing
     const params = new URLSearchParams(window.location.search);
-    document.getElementById('customerId').value = params.get('id') || "DEMO_DEFAULT";
-    document.getElementById('companyName').value = decodeURIComponent(params.get('CompanyName') || "Demo Company");
-    
-    // Auto-fill email if present in URL
-    if (params.get('email')) {
-        document.getElementById('customerEmail').value = params.get('email');
-    }
+    document.getElementById('customerId').value = params.get('id') || "DEMO_12345";
+    document.getElementById('companyName').value = decodeURIComponent(params.get('CompanyName') || "Acme Corp");
+    if (params.get('email')) { document.getElementById('customerEmail').value = params.get('email'); }
 
-    // 2. Display selected files
+    // 2. File UI
     document.getElementById('fileInput').onchange = function() {
         const files = Array.from(this.files).map(f => f.name).join(', ');
         document.getElementById('fileList').innerText = files ? "Selected: " + files : "No files selected.";
     };
 
-    // 3. Webhook Submission Logic
+    // 3. Webhook Submission
     async function processUpload() {
         const webhookUrl = 'https://studio.deepopinion.ai/builder/webhook/4f8ed1d3-2923-4e3a-bf23-46c31b7325e6';
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         const files = document.getElementById('fileInput').files;
 
-        if (files.length === 0) {
-            alert("Please select files to upload.");
-            return;
-        }
+        if (files.length === 0) { alert("Please select files to upload."); return; }
 
-        // Setup UI for loading
         btn.disabled = true;
         status.style.color = "#004a99";
         status.innerText = "⏳ Sending data to Automation Flow...";
@@ -95,10 +83,7 @@
         formData.append('Customer_ID', document.getElementById('customerId').value);
         formData.append('Email', document.getElementById('customerEmail').value);
         formData.append('Company', document.getElementById('companyName').value);
-
-        for (let i = 0; i < files.length; i++) {
-            formData.append(`file_${i}`, files[i]);
-        }
+        for (let i = 0; i < files.length; i++) { formData.append(`file_${i}`, files[i]); }
 
         try {
             const response = await fetch(webhookUrl, {
@@ -118,11 +103,10 @@
         } catch (error) {
             console.error(error);
             status.style.color = "red";
-            status.innerText = "❌ Upload Failed. (Did you click 'Listen for test event'?)";
+            status.innerText = "❌ Upload Failed. Status: " + error.message;
             btn.disabled = false;
         }
     }
 </script>
-
 </body>
 </html>
