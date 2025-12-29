@@ -62,8 +62,6 @@
 <script>
     // 1. Optional URL Parameter Parsing (e.g., for returning users)
     const params = new URLSearchParams(window.location.search);
-    if (params.get('CompanyName')) document.getElementById('companyName').value = decodeURIComponent(params.get('CompanyName'));
-    if (params.get('IndividualName')) document.getElementById('individualName').value = decodeURIComponent(params.get('IndividualName'));
     if (params.get('email')) document.getElementById('customerEmail').value = params.get('email');
 
     // 2. File Selection UI
@@ -79,8 +77,6 @@
         const status = document.getElementById('status');
         
         // Data Extraction
-        const company = document.getElementById('companyName').value.trim();
-        const individual = document.getElementById('individualName').value.trim();
         const email = document.getElementById('customerEmail').value.trim();
         const files = document.getElementById('fileInput').files;
 
@@ -95,8 +91,6 @@
         status.innerText = "⏳ Initiating Dual-Layer AML Audit...";
 
         const formData = new FormData();
-        formData.append('Company_Name', company);
-        formData.append('Individual_Name', individual);
         formData.append('Email', email);
         
         for (let i = 0; i < files.length; i++) {
@@ -128,3 +122,4 @@
 </script>
 </body>
 </html>
+
