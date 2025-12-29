@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secure Update | Compliance Portal</title>
+    <style>
+        :root { --primary: #004a99; --danger: #d93025; --bg: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .card { background: white; width: 100%; max-width: 480px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; }
+        .content { padding: 25px; }
+        
+        #refBox { display: none; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .read-only-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+        .read-only-val { font-size: 16px; font-weight: 700; color: var(--primary); }
+        
+        #auditBox { display: none; background: #fff1f2; border-left: 4px solid var(--danger); padding: 15px; border-radius: 8px; margin-bottom: 25px; color: #9f1239; font-size: 14px; }
+
+        .upload-zone { border: 2px dashed #cbd5e0; border-radius: 12px; padding: 40px 20px; text-align: center; background: #fafbfc; cursor: pointer; }
+        .upload-zone:hover { border-color: var(--primary); background: #f0f7ff; }
+        
+        button { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 25px; }
+        #status { text-align: center; margin-top: 15px; font-size: 14px; }
+        
+        /* Container to toggle visibility of email section */
+        #emailSection { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header"><h1>ComplianceGate</h1></div>
+    <div class="content">
+        <div id="refBox">
+            <span class="read-only-label">Application Reference</span>
+            <div id="displayId" class="read-only-val"></div>
+            
+            <input type="hidden" id="customerId">
+            <input type="hidden" id="hiddenCompanyName">
+            <input type="hidden" id="hiddenCustomerName">
+        </div>
+
+        <div id="auditBox">
+            <strong>Action Required:</strong><br>
+            <span id="auditText"></span>
+        </div>
+
+        <form id="updateForm">
+            <div id="emailSection">
+                <label style="font-size:13px; font-weight:600; margin-bottom:8px; display:block;">Email Address</label>
+                <input type="email" id="customerEmail" style="width:100%; padding:14px; border-radius:10px; border:1px solid #ddd; margin-bottom:20px; box-sizing:border-box;">
+            </div>
+
+            <label style="font-size:13px; font-weight:600; margin-bottom:8px; display:block;">Upload Documents</label>
+            <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                <span style="font-size:30px;">📂</span><br>
+                <strong>Click to Select Files</strong>
+                <p style="font-size:12px; color:#666;">You can select multiple corrected documents at once.</p>
+                <input type="file" id="fileInput" multiple style="display:none;">
+            </div>
+            <div id="fileList" style="font-size:12px; margin-top:10px; color:#555;"></div>
+
+            <button type="button" onclick="submitFiles()">Submit Updated Documents</button>
+            <div id="status"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const caseId = params.get('id');
+    const email = params.get('email');
+    const companyName = params.get('CompanyName');
+    const customerName = params.get('Customername');
+    const msg = params.get('msg');
+
+    // Update Mode Logic
+    if (caseId) {
+        // 1. Show the Reference ID box
+        document.getElementById('customerId').value = caseId;
+        document.getElementById('displayId').innerText = caseId;
+        document.getElementById('refBox').style.display = 'block';
+
+        // 2. Populate and HIDE the email section
+        if (email) {
+            document.getElementById('customerEmail').value = email;
+            document.getElementById('emailSection').style.display = 'none';
+        }
+
+        // 3. Populate other hidden fields
+        if (companyName) document.getElementById('hiddenCompanyName').value = decodeURIComponent(companyName);
+        if (customerName) document.getElementById('hiddenCustomerName').value = decodeURIComponent(customerName);
+
+        // 4. Show audit message if present
+        if (msg) {
+            document.getElementById('auditBox').style.display = 'block';
+            document.getElementById('auditText').innerText = decodeURIComponent(msg);
+        }
+    }
+
+    document.getElementById('fileInput').onchange = function() {
+        const files = Array.from(this.files).map(f => f.name).join(', ');
+        document.getElementById('fileList').innerText = files ? "Selected: " + files : "";
+    };
+
+    async function submitFiles() {
+        const id = document.getElementById('customerId').value || "NEW";
+        const emailVal = document.getElementById('customerEmail').value;
+        const compVal = document.getElementById('hiddenCompanyName').value;
+        const custVal = document.getElementById('hiddenCustomerName').value;
+        const files = document.getElementById('fileInput').files;
+
+        if (!emailVal || files.length === 0) { 
+            alert("Upload failed: Missing email data or no files selected."); 
+            return; 
+        }
+
+        document.getElementById('status').innerText = "⏳ Uploading...";
+        
+        const formData = new FormData();
+        formData.append('Customer_ID', id);
+        formData.append('Customer_Email', emailVal);
+        formData.append('Company_Name', compVal);
+        formData.append('Customer_Name', custVal);
+        
+        for(let i=0; i<files.length; i++) {
+            formData.append('file_' + i, files[i]);
+        }
+
+        try {
+            const res = await fetch('https://https://studio.deepopinion.ai/builder/webhook/4f8ed1d3-2923-4e3a-bf23-46c31b7325e6', { 
+                method: 'POST', 
+                body: formData 
+            });
+            
+            if (res.ok) {
+                document.getElementById('status').innerHTML = "<strong style='color:green;'>✅ Update Received!</strong>";
+                document.getElementById('updateForm').style.display = 'none';
+            } else {
+                throw new Error('Upload failed');
+            }
+        } catch (e) { 
+            document.getElementById('status').innerText = "❌ Error uploading. Please try again."; 
+        }
+    }
+</script>
+
+</body>
+</html>
