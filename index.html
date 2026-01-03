@@ -142,22 +142,28 @@
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
-    const email = params.get("Email");
-    const customerId = params.get("Customer_ID");
+    const token = params.get("token");
 
-    const emailField = document.getElementById("customerEmail");
-    const idField = document.getElementById("customerId");
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token));
+        const emailField = document.getElementById("customerEmail");
+        const idField = document.getElementById("customerId");
 
-    if (email && emailField) {
-      emailField.value = email;
-      emailField.readOnly = true;
-      emailField.style.backgroundColor = "#f0f0f0";
-    }
+        if (decoded.Email) {
+          emailField.value = decoded.Email;
+          emailField.readOnly = true;
+          emailField.style.backgroundColor = "#f0f0f0";
+        }
 
-    if (customerId && idField && customerId !== "undefined") {
-      idField.value = customerId;
-      idField.readOnly = true;
-      idField.style.backgroundColor = "#f0f0f0";
+        if (decoded.Customer_ID && decoded.Customer_ID !== "undefined") {
+          idField.value = decoded.Customer_ID;
+          idField.readOnly = true;
+          idField.style.backgroundColor = "#f0f0f0";
+        }
+      } catch (e) {
+        console.error("Invalid token format", e);
+      }
     }
   });
 
