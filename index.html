@@ -1,50 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ComplianceGate | Onboarding</title>
   <style>
-    :root { --primary: #004a99; --bg: #f3f4f6; --error: #e53e3e; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
-    .card { background: white; width: 100%; max-width: 480px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
-    .header { background: var(--primary); color: white; padding: 25px; text-align: center; }
-    .content { padding: 25px; }
-    .input-group { margin-bottom: 20px; }
-    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #444; }
-    label span { color: var(--error); }
-    input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
-    input:focus { outline: none; border-color: var(--primary); }
-    .upload-zone { border: 2px dashed #cbd5e0; border-radius: 12px; padding: 30px 20px; text-align: center; background: #fafbfc; cursor: pointer; transition: 0.3s; }
-    .upload-zone:hover { border-color: var(--primary); background: #f0f7ff; }
-    button { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 25px; transition: 0.2s; }
-    button:hover { background: #003366; }
-    button:disabled { background: #a0aec0; cursor: not-allowed; }
-    #status { text-align: center; margin-top: 15px; font-size: 14px; font-weight: 600; }
-    #fileList { font-size: 12px; color: #718096; margin-top: 10px; line-height: 1.4; }
+    :root {
+      --primary: #004a99;
+      --bg: #f3f4f6;
+      --error: #e53e3e;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    .content {
+      padding: 25px;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #444;
+    }
+    label span {
+      color: var(--error);
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .upload-zone {
+      border: 2px dashed #cbd5e0;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      background: #fafbfc;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: #f0f7ff;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 25px;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #003366;
+    }
+    button:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #fileList {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
 
 <div class="card">
-  <div class="header"><h1>ComplianceGate</h1><p>AML Dual-Layer Verification</p></div>
+  <div class="header">
+    <h1>ComplianceGate</h1>
+    <p>AML Dual-Layer Verification</p>
+  </div>
   <div class="content">
     <form id="submissionForm">
       <div class="input-group">
         <label>Email Address <span>*</span></label>
-        <input type="email" id="customerEmail" placeholder="email@company.com" required>
+        <input type="email" id="customerEmail" placeholder="email@company.com" required />
       </div>
 
       <div class="input-group">
         <label>Customer ID <span>*</span></label>
-        <input type="text" id="customerId" placeholder="Enter Customer ID" required>
+        <input type="text" id="customerId" placeholder="Enter Customer ID" required />
       </div>
 
       <label>Verification Documents <span>*</span></label>
       <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-        <span style="font-size:30px;">📂</span><br>
+        <span style="font-size:30px;">📂</span><br />
         <strong>Upload ID & Incorporation Docs</strong>
-        <input type="file" id="fileInput" multiple style="display:none;" required>
+        <input type="file" id="fileInput" multiple style="display:none;" required />
       </div>
       <div id="fileList">No files selected.</div>
 
@@ -55,28 +140,41 @@
 </div>
 
 <script>
-  // 1. Auto-fill from URL parameters
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('email')) document.getElementById('customerEmail').value = params.get('email');
-  if (params.get('Customer_ID')) document.getElementById('customerId').value = params.get('Customer_ID');
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("Email");
+    const customerId = params.get("Customer_ID");
 
-  // 2. File selection UI
-  document.getElementById('fileInput').onchange = function() {
-    const files = Array.from(this.files).map(f => f.name).join(', ');
-    document.getElementById('fileList').innerText = files ? "Selected: " + files : "No files selected.";
+    const emailField = document.getElementById("customerEmail");
+    const idField = document.getElementById("customerId");
+
+    if (email && emailField) {
+      emailField.value = email;
+      emailField.readOnly = true;
+      emailField.style.backgroundColor = "#f0f0f0";
+    }
+
+    if (customerId && idField && customerId !== "undefined") {
+      idField.value = customerId;
+      idField.readOnly = true;
+      idField.style.backgroundColor = "#f0f0f0";
+    }
+  });
+
+  document.getElementById("fileInput").onchange = function () {
+    const files = Array.from(this.files).map(f => f.name).join(", ");
+    document.getElementById("fileList").innerText = files ? "Selected: " + files : "No files selected.";
   };
 
-  // 3. Webhook submission
   async function processUpload() {
-    const webhookUrl = 'https://studio.deepopinion.ai/builder/webhook/4f8ed1d3-2923-4e3a-bf23-46c31b7325e6';
-    const btn = document.getElementById('submitBtn');
-    const status = document.getElementById('status');
+    const webhookUrl = "https://studio.deepopinion.ai/builder/webhook/4f8ed1d3-2923-4e3a-bf23-46c31b7325e6";
+    const btn = document.getElementById("submitBtn");
+    const status = document.getElementById("status");
 
-    const email = document.getElementById('customerEmail').value.trim();
-    const customerId = document.getElementById('customerId').value.trim();
-    const files = document.getElementById('fileInput').files;
+    const email = document.getElementById("customerEmail").value.trim();
+    const customerId = document.getElementById("customerId").value.trim();
+    const files = document.getElementById("fileInput").files;
 
-    // Validation
     if (!email || !customerId || files.length === 0) {
       alert("Please fill in all mandatory fields and upload at least one document.");
       return;
@@ -87,8 +185,8 @@
     status.innerText = "⏳ Initiating Dual-Layer AML Audit...";
 
     const formData = new FormData();
-    formData.append('Email', email);
-    formData.append('Customer_ID', customerId);
+    formData.append("Email", email);
+    formData.append("Customer_ID", customerId);
 
     for (let i = 0; i < files.length; i++) {
       formData.append(`file_${i}`, files[i]);
@@ -96,15 +194,15 @@
 
     try {
       const response = await fetch(webhookUrl, {
-        method: 'POST',
+        method: "POST",
         body: formData,
-        mode: 'cors'
+        mode: "cors"
       });
 
       if (response.ok) {
         status.style.color = "green";
         status.innerText = "✅ Audit Request Sent Successfully!";
-        document.getElementById('submissionForm').style.opacity = "0.5";
+        document.getElementById("submissionForm").style.opacity = "0.5";
         btn.innerText = "Audit in Progress";
       } else {
         throw new Error("Server Error: " + response.status);
