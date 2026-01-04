@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ComplianceGate | KYB Portal</title>
+  <style>
+    :root {
+      --primary: #004a99;
+      --bg: #f3f4f6;
+      --error: #e53e3e;
+      --success: #38a169;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .header h1 { margin: 0; font-size: 24px; }
+    .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+    
+    .content { padding: 30px; }
+    
+    .input-group { margin-bottom: 20px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #4a5568;
+    }
+    label span { color: var(--error); }
+    
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e0;
+      box-sizing: border-box;
+      font-size: 15px;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    input[readonly] {
+      background-color: #edf2f7;
+      color: #4a5568;
+      cursor: not-allowed;
+    }
+
+    .upload-zone {
+      border: 2px dashed #cbd5e0;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      background: #fafbfc;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: #f0f7ff;
+    }
+    
+    #fileList {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 10px;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 25px;
+      transition: transform 0.1s, background 0.2s;
+    }
+    button:hover { background: #003366; }
+    button:active { transform: scale(0.98); }
+    button:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h1 id="portalTitle">Compliance Portal</h1>
+    <p id="portalSub">Dual-Layer AML Verification</p>
+  </div>
+  
+  <div class="content">
+    <form id="submissionForm">
+      <div class="input-group">
+        <label>Email Address <span>*</span></label>
+        <input type="email" id="customerEmail" placeholder="email@company.com" required />
+      </div>
+
+      <div class="input-group">
+        <label>Customer ID <span>*</span></label>
+        <input type="text" id="customerId" placeholder="Enter Customer ID" required />
+      </div>
+
+      <div class="input-group">
+        <label>Verification Documents <span>*</span></label>
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <span style="font-size:32px;">📤</span><br />
+          <strong style="display:block; margin-top:10px;">Click to Upload Documents</strong>
+          <span style="font-size:12px; color:#718096;">(ID, Passport, or Bank Statements)</span>
+          <input type="file" id="fileInput" multiple style="display:none;" required />
+        </div>
+        <div id="fileList">No files selected.</div>
+      </div>
+
+      <button type="button" id="submitBtn" onclick="processUpload()">Submit Documentation</button>
+      <div id="status"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Logic to handle Scenario 1 (Insert) vs Scenario 2 (Update)
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    
+    // Look for direct URL parameters
+    const emailParam = params.get("Email");
+    const idParam = params.get("Customer_ID");
+
+    const emailField = document.getElementById("customerEmail");
+    const idField = document.getElementById("customerId");
+    const portalTitle = document.getElementById("portalTitle");
+    const portalSub = document.getElementById("portalSub");
+
+    // Scenario 2: UPDATE (If data is in the URL)
+    if (emailParam || idParam) {
+      portalTitle.innerText = "Complete Your Audit";
+      portalSub.innerText = "Please upload the requested missing files";
+      
+      if (emailParam) {
+        emailField.value = decodeURIComponent(emailParam);
+        emailField.readOnly = true;
+      }
+      if (idParam) {
+        idField.value = decodeURIComponent(idParam);
+        idField.readOnly = true;
+      }
+    } else {
+      // Scenario 1: NEW INSERT
+      console.log("New registration mode active.");
+    }
+  });
+
+  // Display selected filenames
+  document.getElementById("fileInput").onchange = function () {
+    const files = Array.from(this.files).map(f => f.name);
+    const list = document.getElementById("fileList");
+    if (files.length > 0) {
+      list.innerHTML = "<strong>Selected:</strong><br>" + files.join("<br>");
+    } else {
+      list.innerText = "No files selected.";
+    }
+  };
+
+  async function processUpload() {
+    const webhookUrl = "https://studio.deepopinion.ai/builder/webhook/4f8ed1d3-2923-4e3a-bf23-46c31b7325e6";
+    const btn = document.getElementById("submitBtn");
+    const status = document.getElementById("status");
+
+    const email = document.getElementById("customerEmail").value.trim();
+    const customerId = document.getElementById("customerId").value.trim();
+    const files = document.getElementById("fileInput").files;
+
+    if (!email || !customerId || files.length === 0) {
+      alert("Please ensure Email, ID, and at least one document are provided.");
+      return;
+    }
+
+    // UI Feedback
+    btn.disabled = true;
+    btn.innerText = "Processing...";
+    status.style.color = "#004a99";
+    status.innerText = "⏳ Uploading and triggering audit...";
+
+    const formData = new FormData();
+    formData.append("Email", email);
+    formData.append("Customer_ID", customerId);
+
+    // Append multiple files
+    for (let i = 0; i < files.length; i++) {
+      formData.append(`file_${i}`, files[i]);
+    }
+
+    try {
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        body: formData,
+        mode: "cors"
+      });
+
+      if (response.ok) {
+        status.style.color = "green";
+        status.innerText = "✅ Success! Documents received.";
+        document.getElementById("submissionForm").style.opacity = "0.4";
+        document.getElementById("submissionForm").style.pointerEvents = "none";
+        btn.innerText = "Submission Complete";
+      } else {
+        throw new Error("Server returned " + response.status);
+      }
+    } catch (error) {
+      console.error(error);
+      status.style.color = "red";
+      status.innerText = "❌ Error: " + error.message;
+      btn.disabled = false;
+      btn.innerText = "Try Again";
+    }
+  }
+</script>
+
+</body>
+</html>
