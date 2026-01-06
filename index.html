@@ -39,8 +39,6 @@
     .content { padding: 30px; }
     
     .input-group { margin-bottom: 20px; }
-    
-    /* CLASS TO HIDE FIELDS */
     .hidden { display: none !important; }
 
     label {
@@ -59,11 +57,12 @@
       border: 1px solid #cbd5e0;
       box-sizing: border-box;
       font-size: 15px;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
     input:focus {
       outline: none;
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
     }
     input[readonly] {
       background-color: #f7fafc;
@@ -135,12 +134,12 @@
     <form id="submissionForm">
       <div class="input-group" id="emailGroup">
         <label>Email Address <span>*</span></label>
-        <input type="email" id="customerEmail" placeholder="email@company.com" />
+        <input type="email" id="customerEmail" placeholder="email@company.com" required />
       </div>
 
-      <div class="input-group" id="idGroup">
+      <div class="input-group hidden" id="idGroup">
         <label>Customer ID <span>*</span></label>
-        <input type="text" id="customerId" placeholder="Enter Customer ID" />
+        <input type="text" id="customerId" placeholder="Generated ID" />
       </div>
 
       <div class="input-group">
@@ -148,7 +147,7 @@
         <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
           <span style="font-size:32px;">📤</span><br />
           <strong style="display:block; margin-top:10px;">Click to Upload Documents</strong>
-          <span style="font-size:12px; color:#718096;">(ID, Passport, or Bank Statements)</span>
+          <span style="font-size:12px; color:#718096;">(PDF, JPG, or PNG)</span>
           <input type="file" id="fileInput" multiple style="display:none;" required />
         </div>
         <div id="fileList">No files selected.</div>
@@ -163,58 +162,47 @@
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
-    
-    // Get parameters from URL
     const emailParam = params.get("Email");
     const idParam = params.get("Customer_ID");
 
     const emailField = document.getElementById("customerEmail");
     const idField = document.getElementById("customerId");
-    const emailGroup = document.getElementById("emailGroup");
     const idGroup = document.getElementById("idGroup");
     
     const portalTitle = document.getElementById("portalTitle");
     const portalSub = document.getElementById("portalSub");
 
-    // SCENARIO: UPDATE/AUDIT (Parameters found)
-    if (emailParam || idParam) {
+    // SCENARIO: UPDATE/AUDIT (Customer ID exists in URL)
+    if (idParam) {
       portalTitle.innerText = "Complete Your Audit";
-      portalSub.innerText = "Verify details and upload missing files";
+      portalSub.innerText = "Please upload the requested missing files";
       
-      // Keep groups visible and set to Read Only
+      // Show ID Group and Lock Fields
+      idGroup.classList.remove("hidden");
+      idField.value = decodeURIComponent(idParam);
+      idField.readOnly = true;
+
       if (emailParam) {
         emailField.value = decodeURIComponent(emailParam);
         emailField.readOnly = true;
-      }
-      if (idParam) {
-        idField.value = decodeURIComponent(idParam);
-        idField.readOnly = true;
       }
     } 
     // SCENARIO: NEW INSERTION (Clean URL)
     else {
       portalTitle.innerText = "New Registration";
-      portalSub.innerText = "Upload documents to begin verification";
+      portalSub.innerText = "Enter your email and upload documents";
       
-      // HIDE the fields entirely for new users
-      emailGroup.classList.add("hidden");
-      idGroup.classList.add("hidden");
-      
-      // Optional: Set internal flags so your backend knows it's a new entry
-      emailField.value = "New_Insertion@Compliance.com"; 
-      idField.value = "NEW_KYB_CASE";
+      // Customer ID remains hidden
+      // Email field remains editable (Ready for input)
+      emailField.readOnly = false;
+      emailField.focus();
     }
   });
 
-  // Display selected filenames
   document.getElementById("fileInput").onchange = function () {
     const files = Array.from(this.files).map(f => f.name);
     const list = document.getElementById("fileList");
-    if (files.length > 0) {
-      list.innerHTML = "<strong>Selected:</strong><br>" + files.join("<br>");
-    } else {
-      list.innerText = "No files selected.";
-    }
+    list.innerHTML = files.length > 0 ? "<strong>Selected:</strong><br>" + files.join("<br>") : "No files selected.";
   };
 
   async function processUpload() {
@@ -226,6 +214,11 @@
     const customerId = document.getElementById("customerId").value.trim();
     const files = document.getElementById("fileInput").files;
 
+    // MANDATORY CHECK
+    if (!email) {
+      alert("Email Address is required.");
+      return;
+    }
     if (files.length === 0) {
       alert("Please select at least one document.");
       return;
@@ -234,11 +227,11 @@
     btn.disabled = true;
     btn.innerText = "Processing...";
     status.style.color = "#004a99";
-    status.innerText = "⏳ Uploading and triggering audit...";
+    status.innerText = "⏳ Uploading to Salesforce...";
 
     const formData = new FormData();
     formData.append("Email", email);
-    formData.append("Customer_ID", customerId);
+    formData.append("Customer_ID", customerId || "NEW_INSERTION");
 
     for (let i = 0; i < files.length; i++) {
       formData.append(`file_${i}`, files[i]);
@@ -253,12 +246,12 @@
 
       if (response.ok) {
         status.style.color = "green";
-        status.innerText = "✅ Success! Documents received.";
+        status.innerText = "✅ Success! Records will be updated shortly.";
         document.getElementById("submissionForm").style.opacity = "0.4";
         document.getElementById("submissionForm").style.pointerEvents = "none";
         btn.innerText = "Submission Complete";
       } else {
-        throw new Error("Server error: " + response.status);
+        throw new Error("Connection failed: " + response.status);
       }
     } catch (error) {
       console.error(error);
