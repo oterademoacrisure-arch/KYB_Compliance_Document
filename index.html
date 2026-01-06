@@ -39,6 +39,10 @@
     .content { padding: 30px; }
     
     .input-group { margin-bottom: 20px; }
+    
+    /* CLASS TO HIDE FIELDS */
+    .hidden { display: none !important; }
+
     label {
       display: block;
       font-size: 13px;
@@ -62,9 +66,10 @@
       border-color: var(--primary);
     }
     input[readonly] {
-      background-color: #edf2f7;
-      color: #4a5568;
+      background-color: #f7fafc;
+      color: #718096;
       cursor: not-allowed;
+      border-style: dashed;
     }
 
     .upload-zone {
@@ -123,19 +128,19 @@
 <div class="card">
   <div class="header">
     <h1 id="portalTitle">Compliance Portal</h1>
-    <p id="portalSub">Dual-Layer AML Verification</p>
+    <p id="portalSub">KYB Verification System</p>
   </div>
   
   <div class="content">
     <form id="submissionForm">
-      <div class="input-group">
+      <div class="input-group" id="emailGroup">
         <label>Email Address <span>*</span></label>
-        <input type="email" id="customerEmail" placeholder="email@company.com" required />
+        <input type="email" id="customerEmail" placeholder="email@company.com" />
       </div>
 
-      <div class="input-group">
+      <div class="input-group" id="idGroup">
         <label>Customer ID <span>*</span></label>
-        <input type="text" id="customerId" placeholder="Enter Customer ID" required />
+        <input type="text" id="customerId" placeholder="Enter Customer ID" />
       </div>
 
       <div class="input-group">
@@ -156,24 +161,27 @@
 </div>
 
 <script>
-  // Logic to handle Scenario 1 (Insert) vs Scenario 2 (Update)
   document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     
-    // Look for direct URL parameters
+    // Get parameters from URL
     const emailParam = params.get("Email");
     const idParam = params.get("Customer_ID");
 
     const emailField = document.getElementById("customerEmail");
     const idField = document.getElementById("customerId");
+    const emailGroup = document.getElementById("emailGroup");
+    const idGroup = document.getElementById("idGroup");
+    
     const portalTitle = document.getElementById("portalTitle");
     const portalSub = document.getElementById("portalSub");
 
-    // Scenario 2: UPDATE (If data is in the URL)
+    // SCENARIO: UPDATE/AUDIT (Parameters found)
     if (emailParam || idParam) {
       portalTitle.innerText = "Complete Your Audit";
-      portalSub.innerText = "Please upload the requested missing files";
+      portalSub.innerText = "Verify details and upload missing files";
       
+      // Keep groups visible and set to Read Only
       if (emailParam) {
         emailField.value = decodeURIComponent(emailParam);
         emailField.readOnly = true;
@@ -182,9 +190,19 @@
         idField.value = decodeURIComponent(idParam);
         idField.readOnly = true;
       }
-    } else {
-      // Scenario 1: NEW INSERT
-      console.log("New registration mode active.");
+    } 
+    // SCENARIO: NEW INSERTION (Clean URL)
+    else {
+      portalTitle.innerText = "New Registration";
+      portalSub.innerText = "Upload documents to begin verification";
+      
+      // HIDE the fields entirely for new users
+      emailGroup.classList.add("hidden");
+      idGroup.classList.add("hidden");
+      
+      // Optional: Set internal flags so your backend knows it's a new entry
+      emailField.value = "New_Insertion@Compliance.com"; 
+      idField.value = "NEW_KYB_CASE";
     }
   });
 
@@ -208,12 +226,11 @@
     const customerId = document.getElementById("customerId").value.trim();
     const files = document.getElementById("fileInput").files;
 
-    if (!email || !customerId || files.length === 0) {
-      alert("Please ensure Email, ID, and at least one document are provided.");
+    if (files.length === 0) {
+      alert("Please select at least one document.");
       return;
     }
 
-    // UI Feedback
     btn.disabled = true;
     btn.innerText = "Processing...";
     status.style.color = "#004a99";
@@ -223,7 +240,6 @@
     formData.append("Email", email);
     formData.append("Customer_ID", customerId);
 
-    // Append multiple files
     for (let i = 0; i < files.length; i++) {
       formData.append(`file_${i}`, files[i]);
     }
@@ -242,7 +258,7 @@
         document.getElementById("submissionForm").style.pointerEvents = "none";
         btn.innerText = "Submission Complete";
       } else {
-        throw new Error("Server returned " + response.status);
+        throw new Error("Server error: " + response.status);
       }
     } catch (error) {
       console.error(error);
