@@ -231,7 +231,7 @@
 
     const formData = new FormData();
     formData.append("Email", email);
-    formData.append("Customer_ID", customerId || "NEW_INSERTION");
+    formData.append("Customer_ID", customerId);
 
     for (let i = 0; i < files.length; i++) {
       formData.append(`file_${i}`, files[i]);
@@ -265,3 +265,4 @@
 
 </body>
 </html>
+
