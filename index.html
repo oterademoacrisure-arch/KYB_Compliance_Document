@@ -4,20 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ComplianceGate | KYB Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root {
       --primary: #004a99;
       --bg: #f3f4f6;
       --error: #e53e3e;
       --success: #38a169;
+      --border: #cbd5e0;
     }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: var(--bg);
       display: flex;
       justify-content: center;
       padding: 20px;
       margin: 0;
+      color: #2d3748;
     }
     .card {
       background: white;
@@ -33,11 +36,10 @@
       padding: 30px 20px;
       text-align: center;
     }
-    .header h1 { margin: 0; font-size: 24px; }
-    .header p { margin: 5px 0 0; opacity: 0.9; font-size: 14px; }
+    .header h1 { margin: 0; font-size: 24px; letter-spacing: -0.5px; }
+    .header p { margin: 8px 0 0; opacity: 0.85; font-size: 14px; }
     
     .content { padding: 30px; }
-    
     .input-group { margin-bottom: 20px; }
     .hidden { display: none !important; }
 
@@ -54,7 +56,7 @@
       width: 100%;
       padding: 14px;
       border-radius: 10px;
-      border: 1px solid #cbd5e0;
+      border: 1px solid var(--border);
       box-sizing: border-box;
       font-size: 15px;
       transition: all 0.2s;
@@ -72,7 +74,7 @@
     }
 
     .upload-zone {
-      border: 2px dashed #cbd5e0;
+      border: 2px dashed var(--border);
       border-radius: 12px;
       padding: 30px 20px;
       text-align: center;
@@ -88,9 +90,27 @@
     #fileList {
       font-size: 12px;
       color: #718096;
-      margin-top: 10px;
-      line-height: 1.4;
-      word-break: break-all;
+      margin-top: 12px;
+      line-height: 1.5;
+      max-height: 150px;
+      overflow-y: auto;
+      padding: 5px;
+    }
+
+    /* Progress Bar Styles */
+    .progress-container {
+      width: 100%;
+      background-color: #edf2f7;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 10px;
+      background-color: var(--primary);
+      border-radius: 10px;
+      transition: width 0.3s;
     }
 
     button {
@@ -104,20 +124,16 @@
       font-weight: 700;
       cursor: pointer;
       margin-top: 25px;
-      transition: transform 0.1s, background 0.2s;
+      transition: all 0.2s;
     }
-    button:hover { background: #003366; }
-    button:active { transform: scale(0.98); }
-    button:disabled {
-      background: #a0aec0;
-      cursor: not-allowed;
-    }
+    button:hover { background: #003366; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    button:disabled { background: #a0aec0; cursor: not-allowed; }
 
     #status {
       text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-      font-weight: 600;
+      margin-top: 15px;
+      font-size: 13px;
+      font-weight: 500;
       min-height: 20px;
     }
   </style>
@@ -153,6 +169,10 @@
         <div id="fileList">No files selected.</div>
       </div>
 
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
       <button type="button" id="submitBtn" onclick="processUpload()">Submit Documentation</button>
       <div id="status"></div>
     </form>
@@ -160,6 +180,7 @@
 </div>
 
 <script>
+  // Handle URL Parameters on Load
   document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("Email");
@@ -169,102 +190,107 @@
     const idField = document.getElementById("customerId");
     const idGroup = document.getElementById("idGroup");
     
-    const portalTitle = document.getElementById("portalTitle");
-    const portalSub = document.getElementById("portalSub");
-
-    // SCENARIO: UPDATE/AUDIT (Customer ID exists in URL)
     if (idParam) {
-      portalTitle.innerText = "Complete Your Audit";
-      portalSub.innerText = "Please upload the requested missing files";
-      
-      // Show ID Group and Lock Fields
+      document.getElementById("portalTitle").innerText = "Complete Your Audit";
+      document.getElementById("portalSub").innerText = "Please upload the missing documents";
       idGroup.classList.remove("hidden");
       idField.value = decodeURIComponent(idParam);
       idField.readOnly = true;
-
       if (emailParam) {
         emailField.value = decodeURIComponent(emailParam);
         emailField.readOnly = true;
       }
-    } 
-    // SCENARIO: NEW INSERTION (Clean URL)
-    else {
-      portalTitle.innerText = "New Registration";
-      portalSub.innerText = "Enter your email and upload documents";
-      
-      // Customer ID remains hidden
-      // Email field remains editable (Ready for input)
-      emailField.readOnly = false;
-      emailField.focus();
     }
   });
 
+  // Display Selected Files
   document.getElementById("fileInput").onchange = function () {
-    const files = Array.from(this.files).map(f => f.name);
+    const files = Array.from(this.files).map(f => `📄 ${f.name}`);
     const list = document.getElementById("fileList");
     list.innerHTML = files.length > 0 ? "<strong>Selected:</strong><br>" + files.join("<br>") : "No files selected.";
   };
 
-  async function processUpload() {
+  function processUpload() {
     const webhookUrl = "https://studio.deepopinion.ai/builder/webhook/11bbfe4d-99ba-4946-8175-080368d82995";
     const btn = document.getElementById("submitBtn");
     const status = document.getElementById("status");
+    const progBar = document.getElementById("progressBar");
+    const progCont = document.getElementById("progressContainer");
 
     const email = document.getElementById("customerEmail").value.trim();
     const customerId = document.getElementById("customerId").value.trim();
     const files = document.getElementById("fileInput").files;
 
-    // MANDATORY CHECK
-    if (!email) {
-      alert("Email Address is required.");
-      return;
-    }
-    if (files.length === 0) {
-      alert("Please select at least one document.");
+    if (!email || files.length === 0) {
+      Swal.fire('Missing Info', 'Please provide an email and at least one document.', 'warning');
       return;
     }
 
+    // UI Reset
     btn.disabled = true;
     btn.innerText = "Processing...";
-    status.style.color = "#004a99";
-    status.innerText = "⏳ Uploading to Salesforce...";
+    progCont.style.display = "block";
+    progBar.style.width = "0%";
+    status.innerText = "Initializing secure upload...";
 
+    // Use XMLHttpRequest for Progress Tracking (Fetch doesn't support upload progress yet)
+    const xhr = new XMLHttpRequest();
     const formData = new FormData();
     formData.append("Email", email);
     formData.append("Customer_ID", customerId);
-
     for (let i = 0; i < files.length; i++) {
       formData.append(`file_${i}`, files[i]);
     }
 
-    try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        body: formData,
-        mode: "cors"
-      });
-
-      if (response.ok) {
-        status.style.color = "green";
-        status.innerText = "✅ Success! Records will be updated shortly.";
-        document.getElementById("submissionForm").style.opacity = "0.4";
-        document.getElementById("submissionForm").style.pointerEvents = "none";
-        btn.innerText = "Submission Complete";
-      } else {
-        throw new Error("Connection failed: " + response.status);
+    // Track Progress
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        const percent = Math.round((e.loaded / e.total) * 100);
+        progBar.style.width = percent + "%";
+        status.innerText = `Uploading: ${percent}%`;
       }
-    } catch (error) {
-      console.error(error);
-      status.style.color = "red";
-      status.innerText = "❌ Error: " + error.message;
+    });
+
+    // Handle Response
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // SUCCESS DIALOG
+          Swal.fire({
+            title: 'Upload Successful!',
+            text: 'Your documents have been received. We will update your record shortly.',
+            icon: 'success',
+            confirmButtonColor: '#004a99'
+          });
+          status.innerHTML = "<span style='color:green;'>✅ Documents Processed Successfully</span>";
+          btn.innerText = "Submission Complete";
+          document.getElementById("submissionForm").style.opacity = "0.5";
+          document.getElementById("submissionForm").style.pointerEvents = "none";
+        } else {
+          // ERROR DIALOG
+          console.error("Server Error:", xhr.responseText);
+          Swal.fire({
+            title: 'Upload Failed',
+            text: 'Check if the Webhook is set to POST in Otera. Status: ' + xhr.status,
+            icon: 'error'
+          });
+          btn.disabled = false;
+          btn.innerText = "Try Again";
+          status.innerText = "";
+        }
+      }
+    };
+
+    xhr.onerror = function() {
+      Swal.fire('Connection Error', 'Failed to fetch the server. Ensure CORS is enabled and Method is POST.', 'error');
       btn.disabled = false;
       btn.innerText = "Try Again";
-    }
+    };
+
+    xhr.open("POST", webhookUrl, true);
+    xhr.send(formData);
   }
 </script>
 
 </body>
 </html>
-
-
-
