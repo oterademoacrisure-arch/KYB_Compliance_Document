@@ -6,291 +6,112 @@
   <title>ComplianceGate | KYB Portal</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    :root {
-      --primary: #004a99;
-      --bg: #f3f4f6;
-      --error: #e53e3e;
-      --success: #38a169;
-      --border: #cbd5e0;
-    }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-      margin: 0;
-      color: #2d3748;
-    }
-    .card {
-      background: white;
-      width: 100%;
-      max-width: 480px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-    }
-    .header {
-      background: var(--primary);
-      color: white;
-      padding: 30px 20px;
-      text-align: center;
-    }
-    .header h1 { margin: 0; font-size: 24px; letter-spacing: -0.5px; }
-    .header p { margin: 8px 0 0; opacity: 0.85; font-size: 14px; }
-    
+    :root { --primary: #004a99; --bg: #f3f4f6; --error: #e53e3e; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
+    .card { background: white; width: 100%; max-width: 480px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden; }
+    .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; }
     .content { padding: 30px; }
     .input-group { margin-bottom: 20px; }
     .hidden { display: none !important; }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #4a5568;
-    }
-    label span { color: var(--error); }
-    
-    input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      box-sizing: border-box;
-      font-size: 15px;
-      transition: all 0.2s;
-    }
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(0, 74, 153, 0.1);
-    }
-    input[readonly] {
-      background-color: #f7fafc;
-      color: #718096;
-      cursor: not-allowed;
-      border-style: dashed;
-    }
-
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 30px 20px;
-      text-align: center;
-      background: #fafbfc;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .upload-zone:hover {
-      border-color: var(--primary);
-      background: #f0f7ff;
-    }
-    
-    #fileList {
-      font-size: 12px;
-      color: #718096;
-      margin-top: 12px;
-      line-height: 1.5;
-      max-height: 150px;
-      overflow-y: auto;
-      padding: 5px;
-    }
-
-    /* Progress Bar Styles */
-    .progress-container {
-      width: 100%;
-      background-color: #edf2f7;
-      border-radius: 10px;
-      margin-top: 20px;
-      display: none;
-    }
-    .progress-bar {
-      width: 0%;
-      height: 10px;
-      background-color: var(--primary);
-      border-radius: 10px;
-      transition: width 0.3s;
-    }
-
-    button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      width: 100%;
-      padding: 18px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 25px;
-      transition: all 0.2s;
-    }
-    button:hover { background: #003366; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    button:disabled { background: #a0aec0; cursor: not-allowed; }
-
-    #status {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 13px;
-      font-weight: 500;
-      min-height: 20px;
-    }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #4a5568; }
+    input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e0; box-sizing: border-box; }
+    input[readonly] { background-color: #f7fafc; cursor: not-allowed; border-style: dashed; }
+    .upload-zone { border: 2px dashed #cbd5e0; border-radius: 12px; padding: 30px; text-align: center; background: #fafbfc; cursor: pointer; }
+    #fileList { font-size: 12px; color: #718096; margin-top: 10px; line-height: 1.4; }
+    .progress-container { width: 100%; background: #edf2f7; border-radius: 10px; margin-top: 15px; display: none; }
+    .progress-bar { width: 0%; height: 8px; background: var(--primary); border-radius: 10px; transition: width 0.3s; }
+    button { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+    button:disabled { background: #a0aec0; }
+    #status { text-align: center; margin-top: 15px; font-size: 13px; font-weight: 600; }
   </style>
 </head>
 <body>
 
 <div class="card">
   <div class="header">
-    <h1 id="portalTitle">Compliance Portal</h1>
-    <p id="portalSub">KYB Verification System</p>
+    <h1 id="pTitle">Compliance Portal</h1>
+    <p id="pSub">KYB Verification System</p>
   </div>
-  
   <div class="content">
-    <form id="submissionForm">
-      <div class="input-group" id="emailGroup">
+    <form id="uploadForm">
+      <div class="input-group">
         <label>Email Address <span>*</span></label>
-        <input type="email" id="customerEmail" placeholder="email@company.com" required />
+        <input type="email" id="email" required />
       </div>
-
       <div class="input-group hidden" id="idGroup">
-        <label>Customer ID <span>*</span></label>
-        <input type="text" id="customerId" placeholder="Generated ID" />
+        <label>Customer ID</label>
+        <input type="text" id="cid" readonly />
       </div>
-
       <div class="input-group">
         <label>Verification Documents <span>*</span></label>
-        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-          <span style="font-size:32px;">📤</span><br />
-          <strong style="display:block; margin-top:10px;">Click to Upload Documents</strong>
-          <span style="font-size:12px; color:#718096;">(PDF, JPG, or PNG)</span>
-          <input type="file" id="fileInput" multiple style="display:none;" required />
+        <div class="upload-zone" onclick="document.getElementById('files').click()">
+          <span style="font-size:30px;">📤</span><br><strong>Click to Upload</strong>
+          <input type="file" id="files" multiple style="display:none;" />
         </div>
         <div id="fileList">No files selected.</div>
       </div>
-
-      <div class="progress-container" id="progressContainer">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-
-      <button type="button" id="submitBtn" onclick="processUpload()">Submit Documentation</button>
+      <div class="progress-container" id="pCont"><div class="progress-bar" id="pBar"></div></div>
+      <button type="button" id="btn" onclick="upload()">Submit Documentation</button>
       <div id="status"></div>
     </form>
   </div>
 </div>
 
 <script>
-  // Handle URL Parameters on Load
-  document.addEventListener("DOMContentLoaded", () => {
-    const params = new URLSearchParams(window.location.search);
-    const emailParam = params.get("Email");
-    const idParam = params.get("Customer_ID");
+  // Handle URL Params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("Customer_ID")) {
+    document.getElementById("pTitle").innerText = "Complete Your Audit";
+    document.getElementById("idGroup").classList.remove("hidden");
+    document.getElementById("cid").value = params.get("Customer_ID");
+    if (params.get("Email")) document.getElementById("email").value = params.get("Email");
+  }
 
-    const emailField = document.getElementById("customerEmail");
-    const idField = document.getElementById("customerId");
-    const idGroup = document.getElementById("idGroup");
-    
-    if (idParam) {
-      document.getElementById("portalTitle").innerText = "Complete Your Audit";
-      document.getElementById("portalSub").innerText = "Please upload the missing documents";
-      idGroup.classList.remove("hidden");
-      idField.value = decodeURIComponent(idParam);
-      idField.readOnly = true;
-      if (emailParam) {
-        emailField.value = decodeURIComponent(emailParam);
-        emailField.readOnly = true;
-      }
-    }
-  });
-
-  // Display Selected Files
-  document.getElementById("fileInput").onchange = function () {
-    const files = Array.from(this.files).map(f => `📄 ${f.name}`);
-    const list = document.getElementById("fileList");
-    list.innerHTML = files.length > 0 ? "<strong>Selected:</strong><br>" + files.join("<br>") : "No files selected.";
+  document.getElementById("files").onchange = function() {
+    const names = Array.from(this.files).map(f => f.name);
+    document.getElementById("fileList").innerHTML = names.length ? "Selected:<br>" + names.join("<br>") : "No files selected.";
   };
 
-  function processUpload() {
-    const webhookUrl = "https://studio.deepopinion.ai/builder/webhook/11bbfe4d-99ba-4946-8175-080368d82995";
-    const btn = document.getElementById("submitBtn");
-    const status = document.getElementById("status");
-    const progBar = document.getElementById("progressBar");
-    const progCont = document.getElementById("progressContainer");
-
-    const email = document.getElementById("customerEmail").value.trim();
-    const customerId = document.getElementById("customerId").value.trim();
-    const files = document.getElementById("fileInput").files;
-
-    if (!email || files.length === 0) {
-      Swal.fire('Missing Info', 'Please provide an email and at least one document.', 'warning');
-      return;
+  function upload() {
+    const url = "https://studio.deepopinion.ai/builder/webhook/11bbfe4d-99ba-4946-8175-080368d82995";
+    const btn = document.getElementById("btn");
+    const files = document.getElementById("files").files;
+    
+    if (!document.getElementById("email").value || !files.length) {
+      return Swal.fire("Error", "Please fill all fields and select files.", "error");
     }
 
-    // UI Reset
     btn.disabled = true;
-    btn.innerText = "Processing...";
-    progCont.style.display = "block";
-    progBar.style.width = "0%";
-    status.innerText = "Initializing secure upload...";
+    document.getElementById("pCont").style.display = "block";
 
-    // Use XMLHttpRequest for Progress Tracking (Fetch doesn't support upload progress yet)
     const xhr = new XMLHttpRequest();
-    const formData = new FormData();
-    formData.append("Email", email);
-    formData.append("Customer_ID", customerId);
-    for (let i = 0; i < files.length; i++) {
-      formData.append(`file_${i}`, files[i]);
-    }
+    const fd = new FormData();
+    fd.append("Email", document.getElementById("email").value);
+    fd.append("Customer_ID", document.getElementById("cid").value);
+    for (let i = 0; i < files.length; i++) fd.append(`file_${i}`, files[i]);
 
-    // Track Progress
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        progBar.style.width = percent + "%";
-        status.innerText = `Uploading: ${percent}%`;
-      }
-    });
+    xhr.upload.onprogress = (e) => {
+      const p = Math.round((e.loaded / e.total) * 100);
+      document.getElementById("pBar").style.width = p + "%";
+      document.getElementById("status").innerText = "Uploading: " + p + "%";
+    };
 
-    // Handle Response
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         if (xhr.status >= 200 && xhr.status < 300) {
-          // SUCCESS DIALOG
-          Swal.fire({
-            title: 'Upload Successful!',
-            text: 'Your documents have been received. We will update your record shortly.',
-            icon: 'success',
-            confirmButtonColor: '#004a99'
-          });
-          status.innerHTML = "<span style='color:green;'>✅ Documents Processed Successfully</span>";
-          btn.innerText = "Submission Complete";
-          document.getElementById("submissionForm").style.opacity = "0.5";
-          document.getElementById("submissionForm").style.pointerEvents = "none";
+          Swal.fire("Success", "Documents uploaded successfully!", "success");
+          document.getElementById("uploadForm").style.opacity = "0.5";
+          btn.innerText = "Upload Complete";
         } else {
-          // ERROR DIALOG
-          console.error("Server Error:", xhr.responseText);
-          Swal.fire({
-            title: 'Upload Failed',
-            text: 'Check if the Webhook is set to POST in Otera. Status: ' + xhr.status,
-            icon: 'error'
-          });
+          Swal.fire("Connection Error", "Ensure Webhook Method is set to POST in Otera.", "error");
           btn.disabled = false;
-          btn.innerText = "Try Again";
-          status.innerText = "";
         }
       }
     };
 
-    xhr.onerror = function() {
-      Swal.fire('Connection Error', 'Failed to fetch the server. Ensure CORS is enabled and Method is POST.', 'error');
-      btn.disabled = false;
-      btn.innerText = "Try Again";
-    };
-
-    xhr.open("POST", webhookUrl, true);
-    xhr.send(formData);
+    xhr.open("POST", url);
+    xhr.send(fd);
   }
 </script>
-
 </body>
 </html>
