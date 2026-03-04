@@ -71,11 +71,7 @@
       -->
 
       <!-- Customer ID field (hidden until URL param is present) -->
-      <div class="input-group hidden" id="idGroup">
-        <label>Customer ID</label>
-        <input type="text" id="cid" readonly />
-      </div>
-
+    
       <!-- File upload section -->
       <div class="input-group">
         <label>Verification Documents <span>*</span></label>
@@ -102,7 +98,6 @@
   if (params.get("Customer_ID")) {
     document.getElementById("pTitle").innerText = "Complete Your Audit";
     document.getElementById("idGroup").classList.remove("hidden");
-    document.getElementById("cid").value = params.get("Customer_ID");
     // If email field is uncommented, populate it
     if (params.get("Email") && document.getElementById("email")) {
       document.getElementById("email").value = params.get("Email");
@@ -133,7 +128,7 @@
     const xhr = new XMLHttpRequest();
     const fd = new FormData();
     if (emailField) fd.append("Email", emailField.value);
-    fd.append("Customer_ID", document.getElementById("cid").value);
+    
     for (let i = 0; i < files.length; i++) fd.append(`file_${i}`, files[i]);
 
     xhr.upload.onprogress = (e) => {
@@ -161,3 +156,4 @@
 </script>
 </body>
 </html>
+
