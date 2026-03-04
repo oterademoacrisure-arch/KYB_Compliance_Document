@@ -145,7 +145,7 @@
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         if (xhr.status >= 200 && xhr.status < 300) {
-          Swal.fire("Success", "Documents uploaded successfully!", "success");
+          Swal.fire( "Success", "Thank you for uploading your documents. We will review them and provide an update shortly. Please acknowledge receipt of this message via email.", "success" );
           document.getElementById("uploadForm").style.opacity = "0.5";
           btn.innerText = "Upload Complete";
         } else {
@@ -161,3 +161,4 @@
 </script>
 </body>
 </html>
+
