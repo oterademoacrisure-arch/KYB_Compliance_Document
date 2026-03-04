@@ -6,25 +6,50 @@
   <title>ComplianceGate | KYB Portal</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
+    /* Root variables for theme colors */
     :root { --primary: #004a99; --bg: #f3f4f6; --error: #e53e3e; }
+
+    /* General page styling */
     body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
+
+    /* Card container */
     .card { background: white; width: 100%; max-width: 480px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden; }
+
+    /* Header section */
     .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; }
+
+    /* Content section */
     .content { padding: 30px; }
+
+    /* Input group spacing */
     .input-group { margin-bottom: 20px; }
+
+    /* Hidden utility class */
     .hidden { display: none !important; }
+
+    /* Labels */
     label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #4a5568; }
+
+    /* Inputs */
     input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e0; box-sizing: border-box; }
     input[readonly] { background-color: #f7fafc; cursor: not-allowed; border-style: dashed; }
-    .upload-zone { border: 2px dashed #cbd5e0; border-radius: 12px; padding: 30px; text-align: center; background: #fafbfc; cursor: pointer; transition: 0.3s; }
-    .upload-zone:hover { border-color: var(--primary); background: #f0f7ff; }
+
+    /* Upload zone styling */
+    .upload-zone { border: 2px dashed #cbd5e0; border-radius: 12px; padding: 30px; text-align: center; background: #fafbfc; cursor: pointer; }
+
+    /* File list display */
     #fileList { font-size: 12px; color: #718096; margin-top: 10px; line-height: 1.4; }
+
+    /* Progress bar */
     .progress-container { width: 100%; background: #edf2f7; border-radius: 10px; margin-top: 15px; display: none; }
     .progress-bar { width: 0%; height: 8px; background: var(--primary); border-radius: 10px; transition: width 0.3s; }
-    button { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-    button:hover { opacity: 0.9; }
-    button:disabled { background: #a0aec0; cursor: not-allowed; }
-    #status { text-align: center; margin-top: 15px; font-size: 13px; font-weight: 600; color: var(--primary); }
+
+    /* Buttons */
+    button { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+    button:disabled { background: #a0aec0; }
+
+    /* Status text */
+    #status { text-align: center; margin-top: 15px; font-size: 13px; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -36,21 +61,35 @@
   </div>
   <div class="content">
     <form id="uploadForm">
-       <div class="input-group">
+      
+      <!-- EMAIL FIELD (currently commented out) -->
+      <!--
+      <div class="input-group">
+        <label>Email Address <span>*</span></label>
+        <input type="email" id="email" required />
+      </div>
+      -->
+
+      <!-- Customer ID field (hidden until URL param is present) -->
+      <div class="input-group hidden" id="idGroup">
+        <label>Customer ID</label>
+        <input type="text" id="cid" readonly />
+      </div>
+
+      <!-- File upload section -->
+      <div class="input-group">
         <label>Verification Documents <span>*</span></label>
         <div class="upload-zone" onclick="document.getElementById('files').click()">
-          <span style="font-size:30px;">📤</span><br>
-          <strong>Click to Upload Documents</strong>
-          <p style="font-size: 11px; color: #718096; margin-top: 5px;">PDF, PNG, or JPG accepted</p>
+          <span style="font-size:30px;">📤</span><br><strong>Click to Upload</strong>
           <input type="file" id="files" multiple style="display:none;" />
         </div>
         <div id="fileList">No files selected.</div>
       </div>
 
-      <div class="progress-container" id="pCont">
-        <div class="progress-bar" id="pBar"></div>
-      </div>
+      <!-- Progress bar -->
+      <div class="progress-container" id="pCont"><div class="progress-bar" id="pBar"></div></div>
 
+      <!-- Submit button -->
       <button type="button" id="btn" onclick="upload()">Submit Documentation</button>
       <div id="status"></div>
     </form>
@@ -58,88 +97,66 @@
 </div>
 
 <script>
-  // Populate Customer ID from URL
+  // Handle URL Params
   const params = new URLSearchParams(window.location.search);
-  const customerId = params.get("Customer_ID");
-  if (customerId) {
+  if (params.get("Customer_ID")) {
     document.getElementById("pTitle").innerText = "Complete Your Audit";
     document.getElementById("idGroup").classList.remove("hidden");
-    document.getElementById("cid").value = customerId;
+    document.getElementById("cid").value = params.get("Customer_ID");
+    // If email field is uncommented, populate it
+    if (params.get("Email") && document.getElementById("email")) {
+      document.getElementById("email").value = params.get("Email");
+    }
   }
 
-  // Update file list display when files are selected
+  // File selection handler
   document.getElementById("files").onchange = function() {
-    const names = Array.from(this.files).map(f => `📄 ${f.name}`);
-    document.getElementById("fileList").innerHTML = names.length ? 
-      "<strong>Selected files:</strong><br>" + names.join("<br>") : 
-      "No files selected.";
+    const names = Array.from(this.files).map(f => f.name);
+    document.getElementById("fileList").innerHTML = names.length ? "Selected:<br>" + names.join("<br>") : "No files selected.";
   };
 
-  async function upload() {
-    // 1. Target the Webhook URL (Ensuring Production URL is used)
+  // Upload function
+  function upload() {
     const url = "https://studio.deepopinion.ai/builder/webhook/11bbfe4d-99ba-4946-8175-080368d82995";
     const btn = document.getElementById("btn");
     const files = document.getElementById("files").files;
-    const cidValue = document.getElementById("cid").value;
 
-    // 2. Validation
-    if (!files.length) {
-      return Swal.fire("Missing Files", "Please select at least one document to upload.", "warning");
+    // Check for email field only if it exists
+    const emailField = document.getElementById("email");
+    if ((emailField && !emailField.value) || !files.length) {
+      return Swal.fire("Error", "Please fill all fields and select files.", "error");
     }
 
-    // UI Feedback
     btn.disabled = true;
-    btn.innerText = "Processing...";
     document.getElementById("pCont").style.display = "block";
 
-    // 3. Construct Multipart Data
-    const formData = new FormData();
-    formData.append("Customer_ID", cidValue || "Unknown_User");
-    
-    // Add files with the key 'file' for n8n to process as binary
-    for (let i = 0; i < files.length; i++) {
-      formData.append("file", files[i]);
-    }
-
-    // 4. Execute POST Request
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
+    const fd = new FormData();
+    if (emailField) fd.append("Email", emailField.value);
+    fd.append("Customer_ID", document.getElementById("cid").value);
+    for (let i = 0; i < files.length; i++) fd.append(`file_${i}`, files[i]);
 
-    // Track upload progress
     xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.round((e.loaded / e.total) * 100);
-        document.getElementById("pBar").style.width = percent + "%";
-        document.getElementById("status").innerText = `Uploading: ${percent}%`;
+      const p = Math.round((e.loaded / e.total) * 100);
+      document.getElementById("pBar").style.width = p + "%";
+      document.getElementById("status").innerText = "Uploading: " + p + "%";
+    };
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          Swal.fire( "Success", "Thank you for uploading your documents. We will review them and provide an update shortly. Please acknowledge receipt of this message via email.", "success" );
+          document.getElementById("uploadForm").style.opacity = "0.5";
+          btn.innerText = "Upload Complete";
+        } else {
+          Swal.fire("Connection Error", "Ensure Webhook Method is set to POST in Otera.", "error");
+          btn.disabled = false;
+        }
       }
     };
 
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        Swal.fire({
-          title: "Success!",
-          text: "Your documents have been submitted for review. You will receive an update via email.",
-          icon: "success",
-          confirmButtonColor: "#004a99"
-        });
-        document.getElementById("uploadForm").style.opacity = "0.4";
-        btn.innerText = "Upload Successful";
-        document.getElementById("status").innerText = "Completed";
-      } else {
-        console.error("Server Error:", xhr.status, xhr.responseText);
-        Swal.fire("Connection Error", `Server returned code ${xhr.status}. Ensure n8n Webhook is Active and set to POST.`, "error");
-        btn.disabled = false;
-        btn.innerText = "Retry Submission";
-      }
-    };
-
-    xhr.onerror = function() {
-      Swal.fire("Network Error", "Could not reach the server. This is usually a CORS issue or a blocked URL.", "error");
-      btn.disabled = false;
-      btn.innerText = "Submit Documentation";
-    };
-
-    xhr.send(formData);
+    xhr.open("POST", url);
+    xhr.send(fd);
   }
 </script>
 </body>
